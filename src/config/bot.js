@@ -743,18 +743,7 @@ client.on("interactionCreate", async interaction => {
 
 
 
-client.once("ready",()=>{
-
-    console.log(
-        `${client.user.tag} online`
-    );
-
 });
-
-
-client.login(config.token);
-npm install discord.js discord-player
-node bot.js
 export default botConfig;
 
 
