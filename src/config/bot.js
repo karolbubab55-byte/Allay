@@ -289,7 +289,7 @@ export const botConfig = {
   // =========================
   verification: {
     // Message shown when posting the verification panel.
-    defaultMessage: "Click the button below to verify yourself and gain access to the server!",
+    defaultMessage: "Kliknij emotke aby otrzymać rangę gracz",
 
     // Text on the verification button.
     defaultButtonText: "Verify",
