@@ -543,6 +543,218 @@ export function getRandomColor() {
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
+const {
+    Client,
+    GatewayIntentBits,
+    Collection,
+    REST,
+    Routes,
+    SlashCommandBuilder
+} = require("discord.js");
+
+const { Player } = require("discord-player");
+const config = require("./config.json");
+
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildVoiceStates
+    ]
+});
+
+const player = new Player(client);
+
+client.commands = new Collection();
+
+
+// KOMENDY
+const commands = [
+
+    new SlashCommandBuilder()
+    .setName("play")
+    .setDescription("Odtwarza muzykę")
+    .addStringOption(option =>
+        option
+        .setName("song")
+        .setDescription("Link lub nazwa piosenki")
+        .setRequired(true)
+    ),
+
+    new SlashCommandBuilder()
+    .setName("skip")
+    .setDescription("Pomija piosenkę"),
+
+    new SlashCommandBuilder()
+    .setName("stop")
+    .setDescription("Zatrzymuje muzykę"),
+
+    new SlashCommandBuilder()
+    .setName("pause")
+    .setDescription("Pauzuje muzykę"),
+
+    new SlashCommandBuilder()
+    .setName("resume")
+    .setDescription("Wznawia muzykę"),
+
+    new SlashCommandBuilder()
+    .setName("queue")
+    .setDescription("Pokazuje kolejkę")
+
+].map(cmd => cmd.toJSON());
+
+
+// REJESTRACJA KOMEND
+const rest = new REST({version:"10"})
+.setToken(config.token);
+
+
+(async()=>{
+
+    await rest.put(
+        Routes.applicationCommands(config.clientId),
+        {body: commands}
+    );
+
+    console.log("Komendy załadowane");
+
+})();
+
+
+
+// OBSŁUGA KOMEND
+
+client.on("interactionCreate", async interaction => {
+
+    if(!interaction.isChatInputCommand()) return;
+
+
+    if(interaction.commandName === "play"){
+
+        const song =
+        interaction.options.getString("song");
+
+
+        const queue =
+        player.nodes.create(
+            interaction.guild,
+            {
+                metadata:{
+                    channel: interaction.channel
+                }
+            }
+        );
+
+
+        if(!queue.connection)
+        await queue.connect(
+            interaction.member.voice.channel
+        );
+
+
+        const result =
+        await player.search(song,{
+            requestedBy: interaction.user
+        });
+
+
+        queue.addTrack(result.tracks[0]);
+
+        if(!queue.isPlaying())
+        queue.node.play();
+
+
+        interaction.reply(
+            `🎵 Gram: **${song}**`
+        );
+
+    }
+
+
+
+    if(interaction.commandName === "pause"){
+
+        player.nodes
+        .get(interaction.guild)
+        ?.node.pause();
+
+        interaction.reply("⏸️ Pauza");
+
+    }
+
+
+
+    if(interaction.commandName === "resume"){
+
+        player.nodes
+        .get(interaction.guild)
+        ?.node.resume();
+
+        interaction.reply("▶️ Wznowiono");
+
+    }
+
+
+
+    if(interaction.commandName === "skip"){
+
+        player.nodes
+        .get(interaction.guild)
+        ?.node.skip();
+
+        interaction.reply("⏭️ Pominięto");
+
+    }
+
+
+
+    if(interaction.commandName === "stop"){
+
+        player.nodes
+        .get(interaction.guild)
+        ?.delete();
+
+        interaction.reply("⏹️ Stop");
+
+    }
+
+
+
+    if(interaction.commandName === "queue"){
+
+        const queue =
+        player.nodes.get(interaction.guild);
+
+
+        if(!queue)
+        return interaction.reply("Brak muzyki");
+
+
+        interaction.reply(
+            "🎶 Kolejka:\n" +
+            queue.tracks.map(
+                t=>t.title
+            ).join("\n")
+        );
+
+    }
+
+});
+
+
+
+client.once("ready",()=>{
+
+    console.log(
+        `${client.user.tag} online`
+    );
+
+});
+
+
+client.login(config.token);
+npm install discord.js discord-player
+node bot.js
 export default botConfig;
 
 
