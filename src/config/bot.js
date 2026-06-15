@@ -25,7 +25,7 @@ export const botConfig = {
     activities: [
       {
         // Text users will see (example: "Playing /help | Titan Bot").
-        name: "Made with ❤️",
+        name: ,
         // Activity type number (0 = Playing).
         type: 0, 
       },
@@ -263,6 +263,7 @@ export const botConfig = {
     // 2592000000 = 30 days.
     maximumDuration: 2592000000, 
 
+    
     // Role IDs allowed to host giveaways.
     allowedRoles: [],
 
